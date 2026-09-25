@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Asistente } from './componentes/Asistente';
 import { Encabezado } from './componentes/Encabezado';
 import { OFERTA, PENSUM, cargar, guardar, preferenciasDe, reiniciar, solicitudesDe, type Estado } from './estado/estado';
 import { generarHorarios } from './motor/generarHorarios';
@@ -59,6 +60,7 @@ export default function App() {
           Empezar de nuevo
         </button>
       </footer>
+      {e.paso >= 2 && <Asistente e={e} set={set} />}
     </div>
   );
 }

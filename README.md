@@ -23,6 +23,35 @@ npm run build:demo # un solo archivo dist-demo/index.html para compartir
 3. **Preferencias** — orden de 5 prioridades (la primera manda entre horarios con las mismas materias; las demás desempatan), tolerancia a huecos, hora mínima, días bloqueados y máximo de créditos (1–30). Si el máximo supera 21, se avisa que el sobrecupo depende del promedio y debe verificarse con CESA.
 4. **Horarios** — 3 opciones con horario semanal, lista de profesores, métricas y "¿Por qué este?". **Ver otras opciones** pasa a las siguientes del ranking sin repetir horarios que se vean iguales (compara franjas, no NRC); si el estudiante marca un profesor que no le gustó, pasa a "evitar". Para cambiar prioridades, vuelve al paso 3. Descargar imagen y copiar NRC.
 
+## Asistente IA (solo en el repositorio de pruebas)
+
+> Este repositorio es una copia de pruebas de `Hackaton-CESA`. El asistente **no** está en la app oficial.
+
+Botón **✦ Asistente IA** (pasos 2 a 4): el estudiante escribe en sus palabras ("no puedo antes de las 9, trabajo", "quiero los viernes libres", "¿por qué quedó fuera Dirección Comercial?") y el asistente ajusta sus preferencias y vuelve a generar horarios.
+
+**La IA no arma horarios.** Solo traduce lo que dice el estudiante en cambios validados y le pide al motor de siempre (`generarHorarios`) que busque las opciones. Así se conservan las garantías del motor: cero cruces, reglas duras respetadas, sin NRC inventados.
+
+```
+Navegador                                   Vercel                 Modelo abierto
+Asistente.tsx ─► agente/cliente.ts ─POST─►  api/agente.ts  ──────►  DeepSeek / Kimi / Qwen / Gemma
+                     │  ◄── tool_calls ───  (guarda la llave)       (OpenRouter u Ollama)
+                     ▼
+         agente/herramientas.ts: ajustar_preferencias · cambiar_materia · opinar_profesor · generar_horarios
+                     ▼
+         motor/generarHorarios.ts (sin cambios)
+```
+
+| Archivo | Qué hace |
+|---|---|
+| `api/agente.ts` | Función serverless: mensaje de sistema + llave; habla con cualquier API compatible con OpenAI. |
+| `src/agente/herramientas.ts` | Herramientas, validación de lo que propone el modelo y "contexto" (materias, profesores y horarios reales). |
+| `src/agente/cliente.ts` | Ciclo del agente: pide, ejecuta herramientas, repite (máx. 6 rondas). Si cambió algo y no regeneró, corre el motor. |
+| `src/componentes/Asistente.tsx` | Panel de chat. |
+
+**Configurar:** copia `.env.example` como `.env.local`, pon la llave (o usa Ollama sin llave) y `npm run dev`. En Vercel, las mismas variables `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` en *Settings → Environment Variables*. Sin llave, el asistente responde "no está configurado" y el resto de la app funciona igual.
+
+**Modelos:** DeepSeek V3 y Kimi K2 manejan bien las herramientas en español. Gemma pequeña (local) funciona para cambios simples pero falla más en conversaciones largas.
+
 ## Estructura (una carpeta por dueño para no pisarnos)
 
 | Carpeta | Qué hay | Dueño |
